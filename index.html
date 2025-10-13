@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arklynn - Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #141419;
+            --bg-tertiary: #1e1e26;
+            --text-primary: #ffffff;
+            --text-secondary: #b8b8cc;
+            --text-muted: #75758a;
+            --accent: #5865f2;
+            --accent-hover: #4752c4;
+            --accent-light: rgba(88, 101, 242, 0.1);
+            --success: #23d160;
+            --warning: #ffbb33;
+            --danger: #f14747;
+            --border: rgba(255, 255, 255, 0.06);
+            --border-strong: rgba(255, 255, 255, 0.12);
+            --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-medium: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --shadow-strong: 0 16px 40px rgba(0, 0, 0, 0.25);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 16px;
+            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            padding: 1.5rem 1rem;
+            transition: var(--transition-smooth);
+            overflow-y: auto;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .sidebar-logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+        }
+
+        .toggle-sidebar:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .server-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .server-select {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .server-select:hover {
+            border-color: var(--accent);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .nav-title {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .nav-text {
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .nav-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            margin-left: auto;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            transition: var(--transition-smooth);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+        }
+
+        .top-nav {
+            background: rgba(20, 20, 25, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--text-primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+
+        .user-info:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            min-width: 150px;
+            box-shadow: var(--shadow-medium);
+            display: none;
+            z-index: 100;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .server-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .server-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .server-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+        }
+
+        .server-info {
+            flex: 1;
+        }
+
+        .server-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .server-members {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .server-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .server-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .server-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-online {
+            color: var(--success);
+        }
+
+        .status-offline {
+            color: var(--danger);
+        }
+
+        .status-idle {
+            color: var(--warning);
+        }
+
+        /* PÁGINA DE LOGIN */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            position: relative;
+        }
+
+        .login-container::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(88, 101, 242, 0.05) 0%, transparent 70%);
+            z-index: 1;
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-strong);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            border: 3px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .login-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .login-btn i {
+            font-size: 1.2rem;
+        }
+
+        .login-hint {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-logo {
+            margin-bottom: 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .loading-logo img {
+            width: 100px;
+            height: 100px;
+            border-radius: 20px;
+            border: 3px solid var(--accent);
+            box-shadow: 0 0 40px rgba(88, 101, 242, 0.4);
+        }
+
+        .loading-text {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .loading-dots {
+            display: flex;
+            gap: 12px;
+        }
+
+        .loading-dot {
+            width: 14px;
+            height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-dot:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        .loading-dot:nth-child(3) {
+            animation-delay: 0.6s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes dotPulse {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 99;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 1rem;
+            }
+            
+            .content-area {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .servers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">
+            <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" alt="Arklynn">
+        </div>
+        <div class="loading-text">Arklynn</div>
+        <div class="loading-dots">
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+            <div class="loading-dot"></div>
+        </div>
+    </div>
+
+    <!-- PÁGINA DE LOGIN -->
+    <div id="loginPage" class="login-container" style="display: none;">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" alt="Arklynn">
+            </div>
+            <h1 class="login-title">Arklynn Dashboard</h1>
+            <p class="login-subtitle">Manage your servers and bot with ease</p>
+            
+            <button class="login-btn" onclick="loginWithDiscord()">
+                <i class="fab fa-discord"></i>
+                Login with Discord
+            </button>
+            
+            <p class="login-hint">
+                You'll be redirected to Discord for authentication
+            </p>
+        </div>
+    </div>
+
+    <div id="dashboardPage" class="dashboard-container" style="display: none;">
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" alt="Arklynn">
+                    <span class="sidebar-logo-text">Arklynn</span>
+                </a>
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="server-selector">
+                <select class="server-select" id="serverSelect">
+                    <option value="">Select a Server</option>
+                </select>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Navigation</div>
+                <div class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">Dashboard</span>
+                </div>
+                <div class="nav-item" data-page="servers">
+                    <i class="fas fa-server"></i>
+                    <span class="nav-text">My Servers</span>
+                    <span class="nav-badge" id="serversCount">0</span>
+                </div>
+                <div class="nav-item" data-page="bot">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-text">Bot Controls</span>
+                </div>
+                <div class="nav-item" data-page="api">
+                    <i class="fas fa-code"></i>
+                    <span class="nav-text">API Status</span>
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">Management</div>
+                <div class="nav-item" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Settings</span>
+                </div>
+                <div class="nav-item" data-page="analytics">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="nav-text">Analytics</span>
+                </div>
+                <div class="nav-item" data-page="logs">
+                    <i class="fas fa-list"></i>
+                    <span class="nav-text">Logs</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-nav">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <a href="#">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span id="currentPage">Dashboard</span>
+                </div>
+                <div class="user-menu">
+                    <div class="user-info" id="userInfo">
+                        <img id="userAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="user-avatar" alt="User Avatar">
+                        <span class="user-name" id="userName">User</span>
+                    </div>
+                    <div class="user-dropdown" id="userDropdown">
+                        <button class="logout-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div id="dashboardContent" class="page-content">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard Overview</h1>
+                        <div class="page-actions">
+                            <button class="btn btn-secondary" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                            <button class="btn btn-primary" onclick="sendTestNotification()">
+                                <i class="fas fa-bell"></i>
+                                Test Bot
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Servidores movidos para o topo -->
+                    <div class="servers-grid" id="serversGrid">
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-value" id="totalServers">0</div>
+                            <div class="stat-label">Total Servers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-value" id="totalUsers">0</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="stat-value status-online" id="botStatus">Online</div>
+                            <div class="stat-label">Bot Status</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-value" id="onlinePlayers">0</div>
+                            <div class="stat-label">Online Players</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">Server Activity</div>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="serversContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">My Servers</h1>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="inviteBot()">
+                                <i class="fas fa-plus"></i>
+                                Invite Bot
+                            </button>
+                        </div>
+                    </div>
+                    <div id="serversList"></div>
+                </div>
+
+                <div id="botContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Bot Controls</h1>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-terminal"></i>
+                            </div>
+                            <div class="stat-value" id="commandsProcessed">0</div>
+                            <div class="stat-label">Commands Processed</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-value" id="botUptime">99.8%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-title">Command Usage</div>
+                        <canvas id="commandsChart"></canvas>
+                    </div>
+                </div>
+
+                <div id="apiContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">API Status</h1>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-plug"></i>
+                            </div>
+                            <div class="stat-value status-online">Online</div>
+                            <div class="stat-label">API Status</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="stat-value">45ms</div>
+                            <div class="stat-label">Response Time</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Discord Configuration
+        const DISCORD_CLIENT_ID = '1207787855506710578';
+        const DISCORD_REDIRECT_URI = window.location.origin + window.location.pathname;
+        const DISCORD_SCOPE = 'identify guilds';
+        
+        let userData = null;
+        let userGuilds = [];
+        let botStats = {
+            totalUsers: 0,
+            onlinePlayers: 0,
+            commandsProcessed: 0,
+            botStatus: 'Online'
+        };
+
+        // Inicialização simplificada
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM carregado, iniciando aplicação...');
+            
+            // Configurar event listeners primeiro
+            setupEventListeners();
+            
+            // Verificar autenticação após um pequeno delay para garantir que tudo está carregado
+            setTimeout(() => {
+                checkAuth();
+            }, 100);
+        });
+
+        // Verificar autenticação de forma mais simples
+        function checkAuth() {
+            console.log('Verificando autenticação...');
+            
+            // Primeiro processa qualquer callback da URL
+            const hasTokenInUrl = handleAuthCallback();
+            
+            if (hasTokenInUrl) {
+                console.log('Token processado da URL');
+                return;
+            }
+            
+            // Se não há token na URL, verifica localStorage
+            const token = localStorage.getItem('discord_token');
+            
+            if (token) {
+                console.log('Token encontrado no localStorage');
+                fetchUserData(token);
+            } else {
+                console.log('Nenhum token encontrado, mostrando login');
+                showLoginPage();
+            }
+        }
+
+        // Processar callback de autenticação
+        function handleAuthCallback() {
+            const hash = window.location.hash.substring(1);
+            
+            if (!hash) return false;
+            
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
+            const error = params.get('error');
+            const state = params.get('state');
+            const storedState = localStorage.getItem('oauth_state');
+            
+            if (error) {
+                console.error('Erro no OAuth:', error);
+                return false;
+            }
+            
+            if (token && state === storedState) {
+                localStorage.setItem('discord_token', token);
+                localStorage.removeItem('oauth_state');
+                
+                // Limpar URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                fetchUserData(token);
+                return true;
+            }
+            
+            return false;
+        }
+
+        // Buscar dados do usuário
+        function fetchUserData(token) {
+            console.log('Buscando dados do usuário...');
+            
+            fetch('https://discord.com/api/users/@me', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Falha ao buscar dados do usuário: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(user => {
+                userData = user;
+                fetchUserGuilds(token);
+            })
+            .catch(error => {
+                console.error('Erro ao buscar dados do usuário:', error);
+                logout();
+            });
+        }
+
+        // Buscar servidores do usuário
+        function fetchUserGuilds(token) {
+            console.log('Buscando servidores do usuário...');
+            
+            fetch('https://discord.com/api/users/@me/guilds', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Falha ao buscar servidores: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(guilds => {
+                userGuilds = guilds;
+                showDashboard();
+                updateDashboardData();
+                fetchBotStats();
+            })
+            .catch(error => {
+                console.error('Erro ao buscar servidores:', error);
+                showDashboard(); // Mostra dashboard mesmo com erro
+            });
+        }
+
+        // Buscar estatísticas do bot (simulação)
+        function fetchBotStats() {
+            setTimeout(() => {
+                const totalUsers = userGuilds.reduce((sum, guild) => {
+                    return sum + (guild.approximate_member_count || 0);
+                }, 0);
+                
+                botStats = {
+                    totalUsers: totalUsers,
+                    onlinePlayers: Math.floor(Math.random() * 1000),
+                    commandsProcessed: Math.floor(Math.random() * 10000),
+                    botStatus: 'Online'
+                };
+                
+                updateBotStats();
+            }, 500);
+        }
+
+        // Atualizar estatísticas do bot na interface
+        function updateBotStats() {
+            if (document.getElementById('totalUsers')) {
+                document.getElementById('totalUsers').textContent = botStats.totalUsers.toLocaleString();
+            }
+            if (document.getElementById('onlinePlayers')) {
+                document.getElementById('onlinePlayers').textContent = botStats.onlinePlayers.toLocaleString();
+            }
+            if (document.getElementById('commandsProcessed')) {
+                document.getElementById('commandsProcessed').textContent = botStats.commandsProcessed.toLocaleString();
+            }
+            if (document.getElementById('botStatus')) {
+                document.getElementById('botStatus').textContent = botStats.botStatus;
+                document.getElementById('botStatus').className = `stat-value status-${botStats.botStatus.toLowerCase()}`;
+            }
+        }
+
+        // Esconder tela de loading
+        function hideLoadingScreen() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+                setTimeout(() => {
+                    loadingScreen.style.display = 'none';
+                }, 500);
+            }
+        }
+
+        // Mostrar dashboard
+        function showDashboard() {
+            console.log('Mostrando dashboard...');
+            hideLoadingScreen();
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'flex';
+            
+            if (userData) {
+                document.getElementById('userName').textContent = userData.username;
+                document.getElementById('userAvatar').src = userData.avatar ? 
+                    `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png` :
+                    'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
+                
+            initializeCharts();
+            populateServerSelect();
+        }
+
+        // Mostrar página de login
+        function showLoginPage() {
+            console.log('Mostrando página de login...');
+            hideLoadingScreen();
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboardPage').style.display = 'none';
+        }
+
+        // Logout
+        function logout() {
+            console.log('Fazendo logout...');
+            localStorage.removeItem('discord_token');
+            userData = null;
+            userGuilds = [];
+            showLoginPage();
+        }
+
+        // Login com Discord
+        function loginWithDiscord() {
+            console.log('Iniciando login com Discord...');
+            const state = generateRandomString();
+            localStorage.setItem('oauth_state', state);
+            
+            const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(DISCORD_REDIRECT_URI)}&response_type=token&scope=${encodeURIComponent(DISCORD_SCOPE)}&state=${state}`;
+            
+            window.location.href = authUrl;
+        }
+
+        // Atualizar dados do dashboard
+        function updateDashboardData() {
+            if (document.getElementById('totalServers')) {
+                document.getElementById('totalServers').textContent = userGuilds.length;
+            }
+            if (document.getElementById('serversCount')) {
+                document.getElementById('serversCount').textContent = userGuilds.length;
+            }
+            
+            updateServersGrid();
+        }
+
+        // Atualizar grid de servidores
+        function updateServersGrid() {
+            const grid = document.getElementById('serversGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = '';
+            
+            if (userGuilds.length === 0) {
+                grid.innerHTML = '<div class="server-card"><div class="server-header"><div class="server-info"><div class="server-name">No servers found</div><div class="server-members">You need to have admin permissions in at least one server</div></div></div></div>';
+                return;
+            }
+            
+            userGuilds.slice(0, 6).forEach(guild => {
+                const serverCard = document.createElement('div');
+                serverCard.className = 'server-card';
+                serverCard.innerHTML = `
+                    <div class="server-header">
+                        <img src="${guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'}" 
+                             class="server-icon" alt="${guild.name}">
+                        <div class="server-info">
+                            <div class="server-name">${guild.name}</div>
+                            <div class="server-members">${guild.approximate_member_count ? guild.approximate_member_count.toLocaleString() : '0'} members</div>
+                        </div>
+                    </div>
+                    <div class="server-actions">
+                        <button class="server-btn" onclick="configureServer('${guild.id}')">
+                            <i class="fas fa-cog"></i>
+                            Configure
+                        </button>
+                        <button class="server-btn" onclick="manageServer('${guild.id}')">
+                            <i class="fas fa-robot"></i>
+                            Manage Bot
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(serverCard);
+            });
+        }
+
+        // Inicializar gráficos
+        function initializeCharts() {
+            const activityCtx = document.getElementById('activityChart');
+            if (activityCtx) {
+                new Chart(activityCtx.getContext('2d'), {
+                    type: 'line',
+                    data: {
+                        labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                        datasets: [{
+                            label: 'Players Online',
+                            data: [12, 8, 15, 20, 18, 25],
+                            borderColor: '#5865f2',
+                            backgroundColor: 'rgba(88, 101, 242, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            const commandsCtx = document.getElementById('commandsChart');
+            if (commandsCtx) {
+                new Chart(commandsCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['!help', '!status', '!play', '!stop', '!skip'],
+                        datasets: [{
+                            label: 'Usage Count',
+                            data: [45, 32, 28, 19, 15],
+                            backgroundColor: '#5865f2'
+                        }]
+                    },
+                    options: {
+                        responsive: true
+                    }
+                });
+            }
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Toggle sidebar
+            const toggleSidebar = document.getElementById('toggleSidebar');
+            if (toggleSidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('collapsed');
+                });
+            }
+
+            // Mobile menu
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('mobile-open');
+                    document.getElementById('mobileOverlay').classList.toggle('active');
+                });
+            }
+
+            // Mobile overlay
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.remove('mobile-open');
+                    this.classList.remove('active');
+                });
+            }
+
+            // User dropdown
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.getElementById('userDropdown').classList.toggle('show');
+                });
+            }
+
+            // Fechar dropdown quando clicar fora
+            document.addEventListener('click', function() {
+                const userDropdown = document.getElementById('userDropdown');
+                if (userDropdown) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            // Navigation items
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetPage = this.getAttribute('data-page');
+                    showPage(targetPage);
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+
+                    // Fechar menu no mobile após clicar
+                    if (window.innerWidth <= 1024) {
+                        document.getElementById('sidebar').classList.remove('mobile-open');
+                        document.getElementById('mobileOverlay').classList.remove('active');
+                    }
+                });
+            });
+        }
+
+        // Mostrar página específica
+        function showPage(page) {
+            const pages = ['dashboard', 'servers', 'bot', 'api'];
+            pages.forEach(p => {
+                const element = document.getElementById(p + 'Content');
+                if (element) {
+                    element.style.display = p === page ? 'block' : 'none';
+                }
+            });
+            
+            const currentPageElement = document.getElementById('currentPage');
+            if (currentPageElement) {
+                currentPageElement.textContent = page.charAt(0).toUpperCase() + page.slice(1);
+            }
+            
+            if (page === 'servers') {
+                loadServersPage();
+            }
+        }
+
+        // Carregar página de servidores
+        function loadServersPage() {
+            const serversList = document.getElementById('serversList');
+            if (!serversList) return;
+            
+            serversList.innerHTML = '';
+            
+            userGuilds.forEach(guild => {
+                const serverCard = document.createElement('div');
+                serverCard.className = 'server-card';
+                serverCard.innerHTML = `
+                    <div class="server-header">
+                        <img src="${guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'}" 
+                             class="server-icon" alt="${guild.name}">
+                        <div class="server-info">
+                            <div class="server-name">${guild.name}</div>
+                            <div class="server-members">${guild.approximate_member_count ? guild.approximate_member_count.toLocaleString() : '0'} members • ${guild.owner ? 'Owner' : 'Administrator'}</div>
+                        </div>
+                    </div>
+                    <div class="server-actions">
+                        <button class="server-btn" onclick="configureServer('${guild.id}')">
+                            <i class="fas fa-cog"></i>
+                            Settings
+                        </button>
+                        <button class="server-btn" onclick="manageBot('${guild.id}')">
+                            <i class="fas fa-robot"></i>
+                            Bot Settings
+                        </button>
+                        <button class="server-btn" onclick="viewAnalytics('${guild.id}')">
+                            <i class="fas fa-chart-bar"></i>
+                            Analytics
+                        </button>
+                    </div>
+                `;
+                serversList.appendChild(serverCard);
+            });
+        }
+
+        // Popular seleção de servidores
+        function populateServerSelect() {
+            const select = document.getElementById('serverSelect');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Select a Server</option>';
+            
+            userGuilds.forEach(guild => {
+                const option = document.createElement('option');
+                option.value = guild.id;
+                option.textContent = guild.name;
+                select.appendChild(option);
+            });
+        }
+
+        // Atualizar estatísticas
+        function refreshStats() {
+            const btn = event?.target?.closest('.btn');
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+                btn.disabled = true;
+
+                setTimeout(() => {
+                    updateDashboardData();
+                    fetchBotStats();
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 1000);
+            }
+        }
+
+        // Funções auxiliares
+        function sendTestNotification() {
+            alert('Test notification sent to bot!');
+        }
+
+        function inviteBot() {
+            const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;
+            window.open(inviteUrl, '_blank');
+        }
+
+        function configureServer(serverId) {
+            alert(`Configuring server: ${serverId}`);
+        }
+
+        function manageServer(serverId) {
+            alert(`Managing server: ${serverId}`);
+        }
+
+        function manageBot(serverId) {
+            alert(`Managing bot for server: ${serverId}`);
+        }
+
+        function viewAnalytics(serverId) {
+            alert(`Viewing analytics for server: ${serverId}`);
+        }
+
+        function generateRandomString() {
+            return Array.from(crypto.getRandomValues(new Uint8Array(16)))
+                .map(b => b.toString(16).padStart(2, '0'))
+                .join('');
+        }
+    </script>
+</body>
+  </html>
