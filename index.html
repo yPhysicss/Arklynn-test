@@ -2,14 +2,12 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="HandheldFriendly" content="true">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arklynn Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-primary: #000000;
@@ -41,15 +39,6 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        input, textarea, select, button {
-            -webkit-user-select: text;
-            user-select: text;
-            font-family: 'Inter', sans-serif;
         }
 
         body {
@@ -58,14 +47,12 @@
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
-            overflow: hidden;
-            touch-action: pan-x pan-y;
+            overflow-x: hidden;
         }
 
         .dashboard-container {
             display: flex;
-            height: 100vh;
-            max-height: 100vh;
+            min-height: 100vh;
         }
 
         .sidebar {
@@ -80,6 +67,1595 @@
             left: 0;
             top: 0;
             z-index: 100;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 0 0.5rem;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .sidebar-logo img {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .sidebar-logo-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-fast);
+            font-size: 1rem;
+        }
+
+        .toggle-sidebar:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .server-selector {
+            margin-bottom: 1.5rem;
+        }
+
+        .server-select {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .server-select:hover {
+            border-color: var(--accent);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .nav-title {
+            opacity: 0;
+            height: 0;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            margin-bottom: 0.25rem;
+            cursor: pointer;
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: var(--accent-light);
+            color: var(--accent);
+            border-left: 3px solid var(--accent);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        .nav-text {
+            transition: var(--transition-fast);
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            transition: var(--transition-smooth);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+            margin-left: 80px;
+        }
+
+        .top-nav {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .breadcrumb a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: var(--transition-fast);
+        }
+
+        .breadcrumb a:hover {
+            color: var(--text-primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
+        .user-info:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--accent);
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            min-width: 150px;
+            box-shadow: var(--shadow-medium);
+            display: none;
+            z-index: 100;
+        }
+
+        .user-dropdown.show {
+            display: block;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 0.85rem;
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            height: calc(100vh - 80px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            transform: translateY(-2px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--accent-light);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .servers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .server-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: var(--transition-fast);
+        }
+
+        .server-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .server-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .server-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--radius-md);
+        }
+
+        .server-info {
+            flex: 1;
+        }
+
+        .server-name {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .server-members {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .server-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .server-btn {
+            flex: 1;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            font-size: 0.8rem;
+            text-align: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .server-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            height: 300px;
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .setting-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .setting-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .setting-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .setting-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .setting-label {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-tertiary);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .setting-input {
+            margin-bottom: 1rem;
+        }
+
+        .setting-input label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .setting-input input[type="range"] {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .setting-input span {
+            display: block;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .level-card-preview {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .level-card {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+        }
+
+        .level-card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .xp-bar {
+            background: var(--bg-primary);
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+
+        .xp-progress {
+            background: var(--accent);
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .xp-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .status-online {
+            color: var(--success);
+        }
+
+        .status-offline {
+            color: var(--danger);
+        }
+
+        .status-idle {
+            color: var(--warning);
+        }
+
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(88, 101, 242, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(88, 101, 242, 0.05) 0%, transparent 70%);
+            z-index: 1;
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-strong);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .login-logo img {
+            width: 80px;
+            height: 80px;
+            border-radius: 16px;
+            border: 3px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .login-btn i {
+            font-size: 1.2rem;
+        }
+
+        .login-hint {
+            margin-top: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 99;
+        }
+
+        .mobile-overlay.active {
+            display: block;
+        }
+
+        .bot-info-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .bot-info-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .bot-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+        }
+
+        .bot-details {
+            flex: 1;
+        }
+
+        .bot-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .bot-description {
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .bot-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .bot-stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+        }
+
+        .bot-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .bot-stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .no-servers {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .no-servers i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading-content {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .loading-spinner {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-nav {
+                padding: 1rem;
+            }
+            
+            .content-area {
+                padding: 1rem;
+                height: calc(100vh - 70px);
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .servers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .setting-option {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .chart-container {
+                height: 250px;
+            }
+            
+            .bot-info-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+            </div>
+            <div id="loadingText">Loading...</div>
+        </div>
+    </div>
+
+    <div id="loginPage" class="login-container">
+        <div class="login-box">
+            <div class="login-logo">
+                <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" alt="Arklynn">
+            </div>
+            <h1 class="login-title">Arklynn Dashboard</h1>
+            <p class="login-subtitle">Manage your servers and bot with ease</p>
+            
+            <button class="login-btn" onclick="loginWithDiscord()">
+                <i class="fab fa-discord"></i>
+                Login with Discord
+            </button>
+            
+            <p class="login-hint">
+                You'll be redirected to Discord for authentication
+            </p>
+        </div>
+    </div>
+
+    <div id="dashboardPage" class="dashboard-container" style="display: none;">
+        <div class="mobile-overlay" id="mobileOverlay"></div>
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="#" class="sidebar-logo">
+                    <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" alt="Arklynn">
+                    <span class="sidebar-logo-text">Arklynn</span>
+                </a>
+                <button class="toggle-sidebar" id="toggleSidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <div class="server-selector">
+                <select class="server-select" id="serverSelect">
+                    <option value="">Select a Server</option>
+                    <option value="server1">My Gaming Server</option>
+                    <option value="server2">Community Hub</option>
+                    <option value="server3">Development Team</option>
+                </select>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">MAIN</div>
+                <button class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-item" data-page="botinfo">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-text">Bot Information</span>
+                </button>
+                <button class="nav-item" data-page="commands">
+                    <i class="fas fa-terminal"></i>
+                    <span class="nav-text">Commands</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">SETTINGS</div>
+                <button class="nav-item" data-page="level">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-text">Level System</span>
+                </button>
+                <button class="nav-item" data-page="welcome">
+                    <i class="fas fa-door-open"></i>
+                    <span class="nav-text">Welcome</span>
+                </button>
+                <button class="nav-item" data-page="tickets">
+                    <i class="fas fa-ticket-alt"></i>
+                    <span class="nav-text">Tickets</span>
+                </button>
+                <button class="nav-item" data-page="automod">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-text">Auto Mod</span>
+                </button>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-title">OTHER</div>
+                <button class="nav-item" data-page="support">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="nav-text">Support</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="top-nav">
+                <button class="mobile-menu-btn" id="mobileMenuBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb">
+                    <a href="#">Home</a>
+                    <i class="fas fa-chevron-right"></i>
+                    <span id="currentPage">Dashboard</span>
+                </div>
+                <div class="user-menu">
+                    <button class="user-info" id="userInfo">
+                        <img id="userAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" class="user-avatar" alt="User Avatar">
+                        <span class="user-name" id="userName">User</span>
+                    </button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <button class="logout-btn" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- DASHBOARD PAGE -->
+                <div id="dashboardContent" class="page-content">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard Overview</h1>
+                        <div class="page-actions">
+                            <button class="btn btn-secondary" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-server"></i>
+                            </div>
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Total Servers</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-value">1,234</div>
+                            <div class="stat-label">Total Users</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="stat-value status-online">Online</div>
+                            <div class="stat-label">Bot Status</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-terminal"></i>
+                            </div>
+                            <div class="stat-value">1,234</div>
+                            <div class="stat-label">Commands Today</div>
+                        </div>
+                    </div>
+
+                    <div class="servers-grid">
+                        <div class="server-card">
+                            <div class="server-header">
+                                <img src="https://cdn.discordapp.com/icons/123456789/abc123.png" class="server-icon" alt="Server Icon">
+                                <div class="server-info">
+                                    <div class="server-name">My Gaming Server</div>
+                                    <div class="server-members">542 members</div>
+                                </div>
+                            </div>
+                            <div class="server-actions">
+                                <button class="server-btn" onclick="configureServer('server1')">
+                                    <i class="fas fa-cog"></i>
+                                    Configure
+                                </button>
+                                <button class="server-btn" onclick="manageServer('server1')">
+                                    <i class="fas fa-robot"></i>
+                                    Manage Bot
+                                </button>
+                            </div>
+                        </div>
+                        <div class="server-card">
+                            <div class="server-header">
+                                <img src="https://cdn.discordapp.com/icons/987654321/def456.png" class="server-icon" alt="Server Icon">
+                                <div class="server-info">
+                                    <div class="server-name">Community Hub</div>
+                                    <div class="server-members">321 members</div>
+                                </div>
+                            </div>
+                            <div class="server-actions">
+                                <button class="server-btn" onclick="configureServer('server2')">
+                                    <i class="fas fa-cog"></i>
+                                    Configure
+                                </button>
+                                <button class="server-btn" onclick="manageServer('server2')">
+                                    <i class="fas fa-robot"></i>
+                                    Manage Bot
+                                </button>
+                            </div>
+                        </div>
+                        <div class="server-card">
+                            <div class="server-header">
+                                <img src="https://cdn.discordapp.com/icons/456789123/ghi789.png" class="server-icon" alt="Server Icon">
+                                <div class="server-info">
+                                    <div class="server-name">Development Team</div>
+                                    <div class="server-members">87 members</div>
+                                </div>
+                            </div>
+                            <div class="server-actions">
+                                <button class="server-btn" onclick="configureServer('server3')">
+                                    <i class="fas fa-cog"></i>
+                                    Configure
+                                </button>
+                                <button class="server-btn" onclick="manageServer('server3')">
+                                    <i class="fas fa-robot"></i>
+                                    Manage Bot
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-title">Server Activity</div>
+                        <canvas id="activityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- BOT INFORMATION PAGE -->
+                <div id="botinfoContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Bot Information</h1>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="restartBot()">
+                                <i class="fas fa-power-off"></i>
+                                Restart Bot
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bot-info-card">
+                        <div class="bot-info-header">
+                            <img src="https://nexron.ct.ws/assets/Photos/arklynn.png" class="bot-avatar" alt="Arklynn Bot">
+                            <div class="bot-details">
+                                <h2 class="bot-name">Arklynn Bot</h2>
+                                <p class="bot-description">A powerful Discord bot with leveling system, moderation tools, and much more.</p>
+                                <div class="status-online">
+                                    <i class="fas fa-circle"></i> Online & Operational
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bot-stats">
+                            <div class="bot-stat">
+                                <div class="bot-stat-value">99.8%</div>
+                                <div class="bot-stat-label">Uptime</div>
+                            </div>
+                            <div class="bot-stat">
+                                <div class="bot-stat-value">1,234</div>
+                                <div class="bot-stat-label">Commands Today</div>
+                            </div>
+                            <div class="bot-stat">
+                                <div class="bot-stat-value">45ms</div>
+                                <div class="bot-stat-label">Average Ping</div>
+                            </div>
+                            <div class="bot-stat">
+                                <div class="bot-stat-value">v2.1.4</div>
+                                <div class="bot-stat-label">Version</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3>Bot Configuration</h3>
+                            <div class="setting-option">
+                                <span class="setting-label">Activity Status</span>
+                                <select class="server-select" id="botActivity">
+                                    <option value="online">Online</option>
+                                    <option value="idle">Idle</option>
+                                    <option value="dnd">Do Not Disturb</option>
+                                    <option value="invisible">Invisible</option>
+                                </select>
+                            </div>
+                            <div class="setting-option">
+                                <span class="setting-label">Playing Status</span>
+                                <input type="text" class="server-select" id="botStatusText" value="!help for commands" placeholder="Bot status text...">
+                            </div>
+                            <div class="setting-option">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="autoRestart" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="setting-label">Auto Restart on Crash</span>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <h3>Performance</h3>
+                            <div class="setting-option">
+                                <span class="setting-label">Memory Usage</span>
+                                <span class="status-online">128MB / 512MB</span>
+                            </div>
+                            <div class="setting-option">
+                                <span class="setting-label">CPU Usage</span>
+                                <span class="status-online">2.4%</span>
+                            </div>
+                            <div class="setting-option">
+                                <span class="setting-label">Response Time</span>
+                                <span class="status-online">45ms</span>
+                            </div>
+                            <div class="server-actions">
+                                <button class="server-btn" onclick="optimizePerformance()">
+                                    <i class="fas fa-bolt"></i>
+                                    Optimize
+                                </button>
+                                <button class="server-btn" onclick="clearCache()">
+                                    <i class="fas fa-broom"></i>
+                                    Clear Cache
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LEVEL SYSTEM PAGE -->
+                <div id="levelContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Level System</h1>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="saveLevelSettings()">
+                                <i class="fas fa-save"></i>
+                                Save Settings
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-grid">
+                        <div class="setting-card">
+                            <h3>General Settings</h3>
+                            <div class="setting-option">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="levelSystemEnabled" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="setting-label">Enable Level System</span>
+                            </div>
+                            <div class="setting-option">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="announceLevelUps" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="setting-label">Announce Level Ups</span>
+                            </div>
+                            <div class="setting-option">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="stackXp" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="setting-label">Stack XP from Multiple Sources</span>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-card">
+                            <h3>XP Configuration</h3>
+                            <div class="setting-input">
+                                <label>XP per Message</label>
+                                <input type="range" id="xpPerMessage" min="5" max="50" value="15">
+                                <span id="xpValue">15 XP</span>
+                            </div>
+                            <div class="setting-input">
+                                <label>XP Cooldown (seconds)</label>
+                                <input type="range" id="xpCooldown" min="30" max="120" value="60">
+                                <span id="cooldownValue">60 seconds</span>
+                            </div>
+                            <div class="setting-input">
+                                <label>Voice XP per Minute</label>
+                                <input type="range" id="voiceXp" min="1" max="20" value="5">
+                                <span id="voiceXpValue">5 XP/min</span>
+                            </div>
+                        </div>
+
+                        <div class="setting-card">
+                            <h3>Level Rewards</h3>
+                            <div class="setting-option">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="enableRewards" checked>
+                                    <span class="slider"></span>
+                                </label>
+                                <span class="setting-label">Enable Role Rewards</span>
+                            </div>
+                            <div class="setting-input">
+                                <label>Reward Role for Level 5</label>
+                                <select id="level5Role" class="server-select">
+                                    <option value="">Select Role</option>
+                                    <option value="member">Member</option>
+                                    <option value="active">Active Member</option>
+                                </select>
+                            </div>
+                            <div class="setting-input">
+                                <label>Reward Role for Level 10</label>
+                                <select id="level10Role" class="server-select">
+                                    <option value="">Select Role</option>
+                                    <option value="veteran">Veteran</option>
+                                    <option value="elite">Elite Member</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OTHER PAGES -->
+                <div id="commandsContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Commands</h1>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Command Settings</h3>
+                        <p>Configure your bot commands here.</p>
+                    </div>
+                </div>
+
+                <div id="welcomeContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Welcome Settings</h1>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Welcome Configuration</h3>
+                        <p>Configure welcome messages and settings.</p>
+                    </div>
+                </div>
+
+                <div id="ticketsContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Ticket System</h1>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Ticket Configuration</h3>
+                        <p>Configure your ticket system settings.</p>
+                    </div>
+                </div>
+
+                <div id="automodContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Auto Moderation</h1>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Auto Mod Configuration</h3>
+                        <p>Configure auto moderation settings and keywords.</p>
+                    </div>
+                </div>
+
+                <div id="supportContent" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Support</h1>
+                    </div>
+                    <div class="setting-card">
+                        <h3>Get Help</h3>
+                        <p>If you need assistance, join our support server.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulação de dados para demonstração
+        let currentPage = 'dashboard';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            showDashboard();
+        });
+
+        function setupEventListeners() {
+            const toggleSidebar = document.getElementById('toggleSidebar');
+            if (toggleSidebar) {
+                toggleSidebar.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('collapsed');
+                });
+            }
+
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            if (mobileMenuBtn) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.toggle('mobile-open');
+                    document.getElementById('mobileOverlay').classList.toggle('active');
+                });
+            }
+
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', function() {
+                    document.getElementById('sidebar').classList.remove('mobile-open');
+                    this.classList.remove('active');
+                });
+            }
+
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.getElementById('userDropdown').classList.toggle('show');
+                });
+            }
+
+            document.addEventListener('click', function() {
+                const userDropdown = document.getElementById('userDropdown');
+                if (userDropdown) {
+                    userDropdown.classList.remove('show');
+                }
+            });
+
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetPage = this.getAttribute('data-page');
+                    showPage(targetPage);
+                    
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+
+                    if (window.innerWidth <= 1024) {
+                        document.getElementById('sidebar').classList.remove('mobile-open');
+                        document.getElementById('mobileOverlay').classList.remove('active');
+                    }
+                });
+            });
+
+            document.getElementById('xpPerMessage').addEventListener('input', updateXpValue);
+            document.getElementById('xpCooldown').addEventListener('input', updateCooldownValue);
+            document.getElementById('voiceXp').addEventListener('input', updateVoiceXpValue);
+        }
+
+        function showPage(page) {
+            const pages = ['dashboard', 'botinfo', 'level', 'commands', 'welcome', 'tickets', 'automod', 'support'];
+            pages.forEach(p => {
+                const element = document.getElementById(p + 'Content');
+                if (element) {
+                    element.style.display = p === page ? 'block' : 'none';
+                }
+            });
+            
+            const currentPageElement = document.getElementById('currentPage');
+            if (currentPageElement) {
+                const pageNames = {
+                    'dashboard': 'Dashboard',
+                    'botinfo': 'Bot Information',
+                    'level': 'Level System',
+                    'commands': 'Commands',
+                    'welcome': 'Welcome Settings',
+                    'tickets': 'Ticket System',
+                    'automod': 'Auto Mod',
+                    'support': 'Support'
+                };
+                currentPageElement.textContent = pageNames[page] || page;
+            }
+            
+            currentPage = page;
+        }
+
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboardPage').style.display = 'flex';
+            
+            updateXpValues();
+        }
+
+        function loginWithDiscord() {
+            showLoading('Redirecting to Discord...');
+            setTimeout(() => {
+                hideLoading();
+                showDashboard();
+            }, 1500);
+        }
+
+        function logout() {
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+        }
+
+        function updateXpValues() {
+            updateXpValue();
+            updateCooldownValue();
+            updateVoiceXpValue();
+        }
+
+        function updateXpValue() {
+            const xpValue = document.getElementById('xpPerMessage').value;
+            document.getElementById('xpValue').textContent = xpValue + ' XP';
+        }
+
+        function updateCooldownValue() {
+            const cooldownValue = document.getElementById('xpCooldown').value;
+            document.getElementById('cooldownValue').textContent = cooldownValue + ' seconds';
+        }
+
+        function updateVoiceXpValue() {
+            const voiceXpValue = document.getElementById('voiceXp').value;
+            document.getElementById('voiceXpValue').textContent = voiceXpValue + ' XP/min';
+        }
+
+        // Bot Management Functions
+        function restartBot() {
+            if (confirm('Are you sure you want to restart the bot? This may cause a brief interruption.')) {
+                showLoading('Restarting bot...');
+                setTimeout(() => {
+                    hideLoading();
+                    alert('Bot restarted successfully!');
+                }, 2000);
+            }
+        }
+
+        function optimizePerformance() {
+            showLoading('Optimizing performance...');
+            setTimeout(() => {
+                hideLoading();
+                alert('Performance optimized!');
+            }, 1500);
+        }
+
+        function clearCache() {
+            if (confirm('Clear bot cache? This may improve performance.')) {
+                showLoading('Clearing cache...');
+                setTimeout(() => {
+                    hideLoading();
+                    alert('Cache cleared successfully!');
+                }, 1000);
+            }
+        }
+
+        function refreshStats() {
+            showLoading('Refreshing statistics...');
+            setTimeout(() => {
+                hideLoading();
+                alert('Stats refreshed!');
+            }, 1000);
+        }
+
+        function configureServer(serverId) {
+            alert(`Configuring server: ${serverId}`);
+            showPage('level');
+        }
+
+        function manageServer(serverId) {
+            alert(`Managing server: ${serverId}`);
+            showPage('botinfo');
+        }
+
+        function saveLevelSettings() {
+            showLoading('Saving level settings...');
+            setTimeout(() => {
+                hideLoading();
+                alert('Level settings saved successfully!');
+            }, 1000);
+        }
+
+        function showLoading(message) {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+    </script>
+</body>
+</html>            z-index: 100;
         }
 
         .sidebar.collapsed {
